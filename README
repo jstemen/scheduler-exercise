@@ -1,0 +1,40 @@
+This code solves the following problem:
+
+Given a series of meetings, each with a start time, end time, and priority, schedule these meetings into a limited number of rooms, dropping the meetings that are lowest priority.
+
+ 
+
+Write a function, schedule, that reads the unordered input specified below, and returns an array of Meeting IDs ordered by Priority, then by Start time. 
+
+ 
+
+Input:
+
+The first line specifies the number of rooms, R, available for scheduling.
+
+The second line specifies the number of meetings, M, that need to be scheduled.
+
+The next M lines specify each of the attributes of a given meeting in the following order: Meeting ID, Start time, End time, Priority, Title
+
+ 
+
+Output:
+
+An array of Meeting IDs ordered by Priority then by Start time.
+
+ 
+
+Input Example:
+
+3
+5
+1, 1300, 1400, 100, "Board Meeting"
+2, 1345, 1445, 100, "Architecture Review"
+3, 1330, 1350, 100, "Stand Up"
+4, 1500, 1700, 75, "Design Review"
+5, 1300, 1400, 90, "Beer Pong"
+ 
+
+Output:
+
+1 3 2 4
