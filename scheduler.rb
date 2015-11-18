@@ -37,6 +37,9 @@ class Point
   attr_accessor :start_minute, :utilization
 
   def initialize(start_pt, utilization)
+    if utilization < 0
+      raise "utilization can not be negitive"
+    end
     @start_minute = start_pt
     @utilization = utilization
   end
@@ -56,7 +59,7 @@ end
 class Scheduler
   def initialize(event_capacity)
     @events = []
-    @timeline = [Point.new(-1, 0), Point.new(60*24, 0)]
+    @timeline = [Point.new(-1, 0), Point.new(60*24 + 1 , 0)]
     @simu_event_cap = event_capacity
   end
 
@@ -64,6 +67,7 @@ class Scheduler
     successful = true
     i = 0
     during_event = false
+    puts " ================ Incoming event is  #{incoming_event.inspect} =================== "
     puts "Timeline is #{@timeline.inspect}"
     while i < @timeline.size - 1
       puts "i is #{i}"
@@ -75,7 +79,6 @@ class Scheduler
         if present.start_minute == incoming_event.start_minute
           puts "We are aligned with begining of event"
           during_event = true
-          break unless successful = present.increment_utilization(@simu_event_cap)
           # are we straddling the starting pt?
         elsif present.start_minute < incoming_event.start_minute && incoming_event.start_minute < future.start_minute
           puts "We are stradding the beging of the event"
@@ -86,6 +89,9 @@ class Scheduler
       end
 
       if during_event
+        #If we are in the during_event state, we must increment the utilization of every point we land on
+        break unless successful = present.increment_utilization(@simu_event_cap)
+
         puts "Event is currently active"
         # are we straddling the end of the event?  ( must be done before interior segment)
         if present.start_minute < incoming_event.end_minute && incoming_event.end_minute < future.start_minute
@@ -138,5 +144,19 @@ def schedule(num_rooms_availible, events)
   booked_event_ids
 end
 
-events = [Event.new('1', '100', '0', '100'), Event.new('2', '95', '230', '330'), Event.new('3', '90', '300', '500'), Event.new('3', '50', '200', '400')]
-puts schedule(1, events)
+
+require "minitest/autorun"
+
+class PointTests < Minitest::Test
+
+  def test_that_original_problem_is_solved_correctly
+    events = [Event.new('1', '100', '0', '100'), Event.new('2', '95', '230', '330'), Event.new('3', '90', '300', '500'), Event.new('4', '50', '200', '400')]
+    assert_equal(['1', '2'], schedule(1, events))
+  end
+
+  def test_that_original_problem_works_with_more_capacity
+    events = [Event.new('1', '100', '0', '100'), Event.new('2', '95', '230', '330'), Event.new('3', '90', '300', '500'), Event.new('4', '50', '200', '400')]
+    assert_equal(['1', '2', '3'], schedule(2, events))
+  end
+end
+
