@@ -160,7 +160,6 @@ end
 require "minitest/autorun"
 
 class PointTests < Minitest::Test
-=begin
 
   def test_that_original_problem_is_solved_correctly
     events = [Event.new('1', '100', '0', '100'), Event.new('2', '95', '230', '330'), Event.new('3', '90', '300', '500'), Event.new('4', '50', '200', '400')]
@@ -180,7 +179,6 @@ class PointTests < Minitest::Test
               Event.new('5', '90', '1300', '1400')]
     assert_equal(['1', '3', '2', '4'], schedule(3, events))
   end
-=end
   def test_case_eleven
     events = [Event.new('1', '19', '100', '200'),
               Event.new('2', '90', '130', '300'),
