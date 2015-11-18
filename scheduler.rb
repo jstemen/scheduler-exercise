@@ -59,7 +59,7 @@ end
 class Scheduler
   def initialize(event_capacity)
     @events = []
-    @timeline = [Point.new(-1, 0), Point.new(60*24 + 1 , 0)]
+    @timeline = [Point.new(-1, 0), Point.new(60*24 + 1, 0)]
     @simu_event_cap = event_capacity
   end
 
@@ -69,7 +69,8 @@ class Scheduler
     during_event = false
     puts " ================ Incoming event is  #{incoming_event.inspect} =================== "
     puts "Timeline is #{@timeline.inspect}"
-    while i < @timeline.size - 1
+    starting_pos = nil
+    while i < @timeline.size - 1 && successful
       puts "i is #{i}"
       present = @timeline[i]
       future = @timeline[i+1]
@@ -79,12 +80,13 @@ class Scheduler
         if present.start_minute == incoming_event.start_minute
           puts "We are aligned with begining of event"
           during_event = true
+          starting_pos = i
           # are we straddling the starting pt?
         elsif present.start_minute < incoming_event.start_minute && incoming_event.start_minute < future.start_minute
           puts "We are stradding the beging of the event"
           # use exising utilization for new point, shift future to the left to make room for new pt
           @timeline.insert(i+1, Point.new(incoming_event.start_minute, present.utilization))
-          @events << incoming_event
+          #@events << incoming_event
         end
       end
 
@@ -117,13 +119,25 @@ class Scheduler
       i +=1
     end
 
+    if !successful
+      puts "Woops, look like this event can't fit, let's undo our mettling to restore the timeline to our previous state"
+      puts "Messed up timeline is: #{@timeline.inspect}"
+      j = starting_pos
+      while j <= i
+        past_pt = @timeline[j]
+        past_pt.utilization = past_pt.utilization - 1
+        j +=1
+      end
+    end
+
     if successful
-      puts "Successfully inserted: #{incoming_event.inspect}"
+      puts "Successfully inserted: #{incoming_event.inspect}."
     else
       puts "Failed to insert: #{incoming_event.inspect}"
     end
+    puts "We now have #{@events.size} events scheduled"
 
-    @events << incoming_event if successful
+    #@events << incoming_event if successful
     successful
   end
 end
@@ -137,8 +151,6 @@ def schedule(num_rooms_availible, events)
     successful = scheduler.schedule_event potential_event
     if successful
       booked_event_ids << potential_event.id
-    else
-      break
     end
   }
   booked_event_ids
@@ -148,6 +160,7 @@ end
 require "minitest/autorun"
 
 class PointTests < Minitest::Test
+=begin
 
   def test_that_original_problem_is_solved_correctly
     events = [Event.new('1', '100', '0', '100'), Event.new('2', '95', '230', '330'), Event.new('3', '90', '300', '500'), Event.new('4', '50', '200', '400')]
@@ -157,6 +170,22 @@ class PointTests < Minitest::Test
   def test_that_original_problem_works_with_more_capacity
     events = [Event.new('1', '100', '0', '100'), Event.new('2', '95', '230', '330'), Event.new('3', '90', '300', '500'), Event.new('4', '50', '200', '400')]
     assert_equal(['1', '2', '3'], schedule(2, events))
+  end
+
+  def test_case_one
+    events = [Event.new('1', '100', '1300', '1400'),
+              Event.new('2', '100', '1345', '1445'),
+              Event.new('3', '100', '1330', '1350'),
+              Event.new('4', '75', '1500', '1700'),
+              Event.new('5', '90', '1300', '1400')]
+    assert_equal(['1', '3', '2', '4'], schedule(3, events))
+  end
+=end
+  def test_case_eleven
+    events = [Event.new('1', '19', '100', '200'),
+              Event.new('2', '90', '130', '300'),
+              Event.new('3', '100', '230', '400')]
+    assert_equal(['3', '1'], schedule(1, events))
   end
 end
 
